@@ -1,0 +1,8 @@
+streamlit
+boto3
+langchain>=0.1.17
+langchain-community
+python-dotenv
+anthropic
+requests
+faiss-cpu

@@ -13,13 +13,34 @@ load_dotenv()
 # Global chat history
 chat_history = []
 
-# Load JSON file containing scraped website data
+# PowerConnect.AI fallback keywords
+powerconnect_keywords = {
+    "pcai", "powerconnect", "powerconnectai", "powerconnect.ai", "powerconnectai.com"
+}
+
+def is_powerconnect_query(user_input):
+    user_input_lower = user_input.lower().replace(" ", "")
+    return any(keyword in user_input_lower for keyword in powerconnect_keywords)
+
+def clean_response(text):
+    remove_phrases = [
+        "According to the information provided,",
+        "The passage states:",
+        "The passage states that",
+        "Based on the information provided,",
+        "The text provided does not mention or define this term."
+    ]
+    for phrase in remove_phrases:
+        text = text.replace(phrase, "")
+    return text.strip(' "')
+
+# Load scraped data
 def load_data(json_file_path):
     with open(json_file_path, 'r') as file:
         data = json.load(file)
     return data
 
-# Convert each entry to LangChain Document
+# Convert data to LangChain documents
 def convert_to_documents(data):
     documents = []
     for entry in data:
@@ -28,7 +49,7 @@ def convert_to_documents(data):
         documents.append(Document(page_content=content, metadata=metadata))
     return documents
 
-# Store documents in a FAISS vector database
+# Store documents in vector DB
 def store_in_vector_db(documents):
     embeddings = BedrockEmbeddings(
         region_name=os.getenv("AWS_DEFAULT_REGION"),
@@ -37,31 +58,42 @@ def store_in_vector_db(documents):
     vector_db = FAISS.from_documents(documents, embeddings)
     return vector_db
 
-# Set up ConversationalRetrievalChain with Claude 3.5
+# Setup Claude 3.5 with vector retriever
 def setup_qa_chain(vector_db):
     retriever = vector_db.as_retriever()
     llm = BedrockChat(
         region_name=os.getenv("AWS_DEFAULT_REGION"),
-        model_id=os.getenv("BEDROCK_MODEL_ID"),  # e.g., "anthropic.claude-3-sonnet-20240229-v1:0"
+        model_id=os.getenv("BEDROCK_MODEL_ID"),
     )
     qa_chain = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever)
     return qa_chain
 
-# Initialize once and reuse
+# Init data
 json_file_path = "bhc_cleaned_data.json"
 data = load_data(json_file_path)
 documents = convert_to_documents(data)
 vector_db = store_in_vector_db(documents)
 qa_chain = setup_qa_chain(vector_db)
 
-# Public function to use in Streamlit or CLI
+# Main question handler
 def ask_bot(query):
     global chat_history
-    result = qa_chain({"question": query, "chat_history": chat_history})
-    chat_history.append((query, result["answer"]))
-    return result["answer"]
 
-# Optional: run in CLI mode
+    # 🔁 PCAI fallback
+    if is_powerconnect_query(query):
+        fallback_answer = (
+            "PowerConnect.AI (PCAI) is a digital assistant platform focused on customer service "
+            "for utilities and other industries. Learn more at [powerconnect.ai](https://www.powerconnect.ai)."
+        )
+        chat_history.append((query, fallback_answer))
+        return fallback_answer
+
+    result = qa_chain({"question": query, "chat_history": chat_history})
+    cleaned_answer = clean_response(result["answer"])
+    chat_history.append((query, cleaned_answer))
+    return cleaned_answer
+
+# Optional: Run from CLI
 if __name__ == "__main__":
     print("💬 BHC Global Chatbot (Claude 3.5 via Bedrock) is ready. Type 'exit' to quit.")
     while True:
