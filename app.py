@@ -17,24 +17,69 @@ st.markdown("""
         .stApp {
             font-family: 'Segoe UI', sans-serif;
         }
+        .chat-container {
+            # border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
         .chat-box {
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            border-radius: 16px;
-            padding: 14px;
-            background-color: #f0f0f0;
+            # border-radius: 16px;
+            # padding: 14px;
+            # background-color: #f0f0f0;
             margin-bottom: 10px;
         }
-        .user-msg {
+        .header {
+            background: linear-gradient(to right, #2343E1, #1A64E8, #137FEE, #0E8EF2, #02C8FF);
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 0px solid transparent;
+        }
+        .header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .header-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .header-text .name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .header-text .status {
+            font-size: 12px;
+            color: #e0f7ff;
+        }
+        .chat-box > .user-msg {
             color: #0033A0;
+            color: white;
+            background-image: linear-gradient(to right, #2343E1, #1A64E8, #137FEE, #0E8EF2, #02C8FF);
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            margin-left: 100px !important;
+            padding: 14px;
+            border-radius: 16px;
         }
         .bot-msg {
             color: #333;
+            margin-right: 100px;
+            # margin-left: 20px;
+            background-color: #f0f0f0;
+            padding: 14px;
+            border-radius: 16px;
         }
         .avatar {
-            width: 38px;
+            width: 108px;
             height: 38px;
             border-radius: 50%;
             object-fit: cover;
@@ -45,7 +90,6 @@ st.markdown("""
             border: 1px solid #ccc;
             padding: 10px;
             width: 100%;
-            margin-right: 8px;
         }
         .input-row {
             display: flex;
@@ -59,13 +103,35 @@ st.markdown("""
             padding: 8px 12px;
             font-size: 18px;
         }
+        .ai-heading {
+            color: #0033A0;
+            margin-bottom: 10px;
+        }
+        .stTextInput {
+            margin: 10px 20px;
+        }
+        .st-emotion-cache-1w723zb {
+            padding: 3rem 1rem 10rem;
+        }
+        .st-emotion-cache-11byp7q {
+            width: 10%;    
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # --- Intro Header ---
 st.markdown("""
-    <h3 style='color:#0033A0; margin-bottom:10px;'>🤖 BHC Global AI Assistant</h3>
-    <p>Ask me anything about BHC Global’s services, products, careers, or mission.</p>
+    <div class="chat-container">
+        <div class="header">
+            <img src="https://cdn.imgbin.com/24/14/3/3d-woman-avatar-stylized-cartoon-woman-avatar-with-glasses-knJAM2pV.jpg" alt="Avatar">
+            <div class="header-text">
+            <div>
+            <div class="name">Ava, BHC Global AI Assistant</div>
+            <div class="status">🟢 Online</div>
+            </div>
+        </div>
+    </div>
+            
 """, unsafe_allow_html=True)
 
 # --- Session State Init ---
