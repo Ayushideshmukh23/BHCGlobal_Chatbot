@@ -1,6 +1,14 @@
 import streamlit as st
 from chatbot import ask_bot
 
+st.markdown("""
+    <style>
+        body, .stApp {
+            background-color: white !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- Streamlit page config ---
 st.set_page_config(
     page_title="BHC Global Chatbot",
@@ -92,16 +100,7 @@ followup_yes = {"yes", "yeah", "yup", "sure", "tell me more", "go on"}
 followup_no = {"no", "nah", "no thanks"}
 
 # --- Input field and icon ---
-query = st.text_input("Type your question here:", key="chat_input", label_visibility="collapsed")
-
-col1, col2 = st.columns([12, 1])
-with col1:
-    pass  # input already above
-with col2:
-    if st.button("➤", key="send", help="Send", use_container_width=True):
-        st.session_state.submit_clicked = True
-    else:
-        st.session_state.submit_clicked = False
+query = st.session_state.get("chat_input", "")
 
 if query and (st.session_state.get("submit_clicked") or st.session_state.get("chat_input_submitted")):
     with st.spinner("Thinking..."):
@@ -145,6 +144,7 @@ for speaker, msg in st.session_state.chat_history:
                 <div class='bot-msg'>{msg}</div>
             </div>
         """, unsafe_allow_html=True)
+        
 
 # --- JS to trigger submit on Enter ---
 st.markdown("""
@@ -160,3 +160,47 @@ st.markdown("""
     }
     </script>
 """, unsafe_allow_html=True)
+
+st.markdown("""
+    <style>
+        .chat-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .chat-input-wrapper input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            background-color: #f5f5f5;
+            font-size: 14px;
+        }
+        .chat-input-wrapper button {
+            background-color: #f5f5f5 !important;
+            border: none !important;
+            border-radius: 50% !important;
+            padding: 10px !important;
+            font-size: 18px !important;
+            color: #0033A0 !important;
+            cursor: pointer;
+        }
+    </style>
+    <div class="chat-input-wrapper">
+        <input id="chat-input-box" type="text" placeholder="Type your message..." />
+        <button onclick="document.querySelector('button[kind=primary]').click()">➤</button>
+    </div>
+    <script>
+        const realInput = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+        const fakeInput = document.getElementById("chat-input-box");
+        fakeInput.addEventListener("input", () => realInput.value = fakeInput.value);
+        fakeInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                const btn = window.parent.document.querySelector('button[kind=primary]');
+                if (btn) btn.click();
+            }
+        });
+    </script>
+""", unsafe_allow_html=True)
+
